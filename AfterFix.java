@@ -4,57 +4,57 @@ import java.io.IOException;
 
 public class SensorDataProcessor {
     // Sensor data and limits.
-    public double[][][] data;
-    public double[][] limit;
+    public double[][][] sensorData;
+    public double[][] limits;
 
     // Constructor
-    public SensorDataProcessor(double[][][] data, double[][] limit) {
-        this.data = data;
-        this.limit = limit;
+    public SensorDataProcessor(double[][][] sensorData, double[][] limits) {
+        this.sensorData = sensorData;
+        this.limits = limits;
     }
 
     // Calculates average of sensor data
-    private double average(double[] array) {
-        double val = 0;
+    private double calculateAverage(double[] array) {
+        double sum = 0;
         for (int i = 0; i < array.length; i++) {
-            val += array[i];
+            sum += array[i];
         }
-        return val / array.length;
+        return sum / array.length;
     }
 
-    // Calculate data
-    public void calculate(double d) {
-        double[][][] data2 = new double[data.length][data[0].length][data[0][0].length];
-        BufferedWriter out;
-  try {
-            out = new BufferedWriter(new FileWriter("RacingStatsData.txt"));
-            for (int i = 0; i < data.length; i++) {
-                for (int j = 0; j < data[0].length; j++) {
-                    for (int k = 0; k < data[0][0].length; k++) {
-                        data2[i][j][k] = data[i][j][k] / d - Math.pow(limit[i][j], 2.0);
+    // Calculate processed data
+    public void calculateProcessedData(double divisor) {
+        double[][][] processedData = new double[sensorData.length][sensorData[0].length][sensorData[0][0].length];
+        BufferedWriter writer;
 
-                        if (average(data2[i][j]) > 10 && average(data2[i][j]) < 50) {
+   try {
+            writer = new BufferedWriter(new FileWriter("RacingStatsData.txt"));
+            for (int i = 0; i < sensorData.length; i++) {
+                for (int j = 0; j < sensorData[0].length; j++) {
+                    for (int k = 0; k < sensorData[0][0].length; k++) {
+                        processedData[i][j][k] = sensorData[i][j][k] / divisor - Math.pow(limits[i][j], 2.0);
+
+                        if (calculateAverage(processedData[i][j]) > 10 && calculateAverage(processedData[i][j]) < 50) {
                             break;
-                        } else if (Math.max(data[i][j][k], data2[i][j][k]) > data[i][j][k]) {
+                        } else if (Math.max(sensorData[i][j][k], processedData[i][j][k]) > sensorData[i][j][k]) {
                             break;
-                        } else if (Math.pow(Math.abs(data[i][j][k]), 3) < Math.pow(Math.abs(data2[i][j][k]), 3)
-                                && average(data[i][j]) < data2[i][j][k] && (i + 1) * (j + 1) > 0) {
-                            data2[i][j][k] *= 2;
+                        } else if (Math.pow(Math.abs(sensorData[i][j][k]), 3) < Math.pow(Math.abs(processedData[i][j][k]), 3)
+                                && calculateAverage(sensorData[i][j]) < processedData[i][j][k] && (i + 1) * (j + 1) > 0) {
+                            processedData[i][j][k] *= 2;
                         }
                     }
 
-                    // Write the data into a file
-                    for (int k = 0; k < data2[0][0].length; k++) {
-                        out.write(String.valueOf(data2[i][j][k]) + "\t");
+                    // Write the processed data into a file
+                    for (int k = 0; k < processedData[0][0].length; k++) {
+                        writer.write(String.valueOf(processedData[i][j][k]) + "\t");
                     }
-                    out.newLine();
+                    writer.newLine();
                 }
             }
 
-            out.close();
+            writer.close();
         } catch (IOException e) {
-            System.out.println("Error= " + e);
+            System.out.println("Error: " + e);
         }
     }
 }
-
